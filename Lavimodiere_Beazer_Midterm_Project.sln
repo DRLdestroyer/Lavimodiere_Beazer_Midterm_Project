@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.1259
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lavimodiere_Beazer_Midterm_Project", "Lavimodiere_Beazer_Midterm_Project\Lavimodiere_Beazer_Midterm_Project.csproj", "{1B4D1DCB-C565-4D89-9474-6855C1D2C26F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1B4D1DCB-C565-4D89-9474-6855C1D2C26F}.Debug|x86.ActiveCfg = Debug|x86
+		{1B4D1DCB-C565-4D89-9474-6855C1D2C26F}.Debug|x86.Build.0 = Debug|x86
+		{1B4D1DCB-C565-4D89-9474-6855C1D2C26F}.Release|x86.ActiveCfg = Release|x86
+		{1B4D1DCB-C565-4D89-9474-6855C1D2C26F}.Release|x86.Build.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7E4E7B09-120F-481E-B6C4-1C8ECCE27254}
+	EndGlobalSection
+EndGlobal
