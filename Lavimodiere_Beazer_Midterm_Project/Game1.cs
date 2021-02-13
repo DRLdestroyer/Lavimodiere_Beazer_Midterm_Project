@@ -44,7 +44,7 @@ namespace Lavimodiere_Beazer_Midterm_Project
         {
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            spriteSheet = Content.Load<Texture2D>(@"Textures\SpriteSheetNew");//!
+            spriteSheet = Content.Load<Texture2D>(@"Textures\SpriteSheetNew");//sprite sheet src
             titleScreen = Content.Load<Texture2D>(@"Textures\TitleScreen");
             defaultFont = Content.Load<SpriteFont>(@"Fonts\defaultFont");
 
@@ -62,19 +62,12 @@ namespace Lavimodiere_Beazer_Midterm_Project
 
             WeaponManager.Texture = spriteSheet;
 
-            GoalManager.Initialize(
-                spriteSheet,
-                new Rectangle(0, 7 * 32, 32, 32),
-                new Rectangle(3 * 32, 7 * 32, 32, 32),
-                3,
-                1);
-            EnemyManager.Initialize(spriteSheet, new Rectangle(0, 64, 32, 32));//! set enemy sprite
+            EnemyManager.Initialize(spriteSheet, new Rectangle(0, 64, 32, 32));//set enemy sprite
         }
 
         protected override void UnloadContent()
         {
         }
-
 
         private void checkPlayerDeath()
         {
@@ -88,7 +81,6 @@ namespace Lavimodiere_Beazer_Midterm_Project
                 }
             }
         }
-
 
         protected override void Update(GameTime gameTime)
         {
@@ -109,15 +101,12 @@ namespace Lavimodiere_Beazer_Midterm_Project
 
                 case GameStates.Playing:
 
-                    Player.Update(gameTime);                 
-                    WeaponManager.Update(gameTime);          
-                    EnemyManager.Update(gameTime);           
-                    EffectsManager.Update(gameTime);          
-                    GoalManager.Update(gameTime);            
-                    if (GoalManager.ActiveTerminals == 0)      
-                    {
-                        gameState = GameStates.WaveComplete;      
-                    }
+                    Player.Update(gameTime);
+                    WeaponManager.Update(gameTime);
+                    EnemyManager.Update(gameTime);
+                    EffectsManager.Update(gameTime);
+                    //!when all enemies killed go to next area (unlock door)
+                    //if ( == 0) gameState = GameStates.WaveComplete;//! 
                     break;
 
                 case GameStates.WaveComplete:
@@ -144,6 +133,8 @@ namespace Lavimodiere_Beazer_Midterm_Project
                     break;
             }
 
+            Window.Title = "Player Square:" + (Player.BaseSprite.WorldLocation/32).ToPoint().ToString();//!player location
+
             base.Update(gameTime);
         }
 
@@ -167,15 +158,13 @@ namespace Lavimodiere_Beazer_Midterm_Project
                 Player.Draw(spriteBatch);             
                 EnemyManager.Draw(spriteBatch);      
                 EffectsManager.Draw(spriteBatch);      
-                GoalManager.Draw(spriteBatch);        
 
                 checkPlayerDeath();                    
 
                 spriteBatch.DrawString(defaultFont,
                     "Score: " + GameManager.Score.ToString(), new Vector2(30, 5), Color.White);
 
-                spriteBatch.DrawString(defaultFont,
-                    "Terminals Remaining: " + GoalManager.ActiveTerminals, new Vector2(520, 5), Color.White);
+                //spriteBatch.DrawString(defaultFont,"Terminals Remaining: " + GoalManager.ActiveTerminals, new Vector2(520, 5), Color.White);
             }
 
             if (gameState == GameStates.WaveComplete)

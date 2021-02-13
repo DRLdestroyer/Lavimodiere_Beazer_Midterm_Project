@@ -9,63 +9,29 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Lavimodiere_Beazer_Midterm_Project
 {
-    static class WeaponManager
+    class WeaponManager
     {
-
-        static public List<Particle> Shots = new List<Particle>();
+        static public List<Particle> Shots = new List<Particle>();//List of shots in the world
         static public Texture2D Texture;
+        
+        //Projectile vars
+        public enum WeaponType { Normal, Triple, Rocket };
+        static private float[] minTimer = {
+            0.15f,//shot//0
+            0.5f//,//rocket//1
+        };
         static public Rectangle shotRectangle = new Rectangle(0, 128, 32, 32);
         static public float WeaponSpeed = 600f;
         static private float shotTimer = 0f;
-        static private float shotMinTimer = 0.15f;
+        static public int bouncesLeft = 0;//!
 
-        static private float rocketMinTimer = 0.5f;
-        public enum WeaponType { Normal, Triple, Rocket };
-        static public WeaponType CurrentWeaponType = WeaponType.Rocket;
+
+        static public WeaponType CurrentWeaponType = WeaponType.Normal;
         static public float WeaponTimeRemaining = 30.0f;
         static private float weaponTimeDefault = 30.0f;
-        static private float tripleWeaponSplitAngle = 15;
-
-        static public List<Sprite> PowerUps = new List<Sprite>();
-        static private int maxActivePowerups = 5;
-        static private float timeSinceLastPowerup = 0.0f;
-        static private float timeBetweenPowerups = 2.0f;
-        static private Random rand = new Random();
 
 
-        #region Properties
-        
-        static public float WeaponFireDelay
-        {
-            get
-            {
-                if (CurrentWeaponType == WeaponType.Rocket)
-                {
-                    return rocketMinTimer;
-                }
-                else
-                {
-                    return shotMinTimer;
-                }
-            }
-        }
-
-
-        static public bool CanFireWeapon
-        {
-            get
-            {
-                return (shotTimer >= WeaponFireDelay);
-            }
-        }
-
-        #endregion
-
-
-
-        #region Effects Management Methods
-        
-        private static void AddShot(Vector2 location, Vector2 velocity, int frame)
+        private static void AddShot(Vector2 location, Vector2 velocity, int projectileTextureID)
         {
             Particle shot = new Particle(
             location,
@@ -84,7 +50,7 @@ namespace Lavimodiere_Beazer_Midterm_Project
             shotRectangle.Width,
             shotRectangle.Height));
             shot.Animate = false;
-            shot.Frame = frame;
+            shot.Frame = projectileTextureID;
             shot.RotateTo(velocity);
 
             Shots.Add(shot);
@@ -100,13 +66,33 @@ namespace Lavimodiere_Beazer_Midterm_Project
         }
 
 
-        #endregion
+        static public float WeaponFireDelay
+        {
+            get
+            {
+                switch (CurrentWeaponType)
+                {
+                    case WeaponType.Normal:
+                        return minTimer[0];
+                    case WeaponType.Triple:
+                        return minTimer[0];
+                    case WeaponType.Rocket:
+                        return minTimer[1];
+                    default:
+                        return 0;
+                }
+            }
+        }
 
+        static public bool CanFireWeapon
+        {
+            get
+            {
+                return (shotTimer >= WeaponFireDelay);
+            }
+        }
 
-
-        #region Weapons Management Methods
-
-        public static void FireWeapon(Vector2 location, Vector2 velocity)
+        public static void FireWeapon(Vector2 location, Vector2 velocity)//!creates bullets
         {
             switch (CurrentWeaponType)
             {
@@ -116,7 +102,7 @@ namespace Lavimodiere_Beazer_Midterm_Project
             case WeaponType.Triple:
                 AddShot(location, velocity, 0);
                 float baseAngle = (float)Math.Atan2(velocity.Y, velocity.X);
-                float offset = MathHelper.ToRadians(tripleWeaponSplitAngle);
+                float offset = MathHelper.ToRadians(15);//15 is split angle
                 AddShot(location, 
                     new Vector2((float)Math.Cos(baseAngle - offset),
                         (float)Math.Sin(baseAngle - offset)) * velocity.Length(), 0);
@@ -147,71 +133,8 @@ namespace Lavimodiere_Beazer_Midterm_Project
         }
 
 
-        private static void tryToSpawnPowerup(int x, int y, WeaponType type)
-        {
-            if (PowerUps.Count >= maxActivePowerups)
-            {
-                return;
-            }
-
-            Rectangle thisDestination = TileMap.SquareWorldRectangle(new Vector2(x,y));
-
-            foreach (Sprite powerup in PowerUps)
-            {
-                if (powerup.WorldRectangle == thisDestination)
-                {
-                    return;
-                }
-            }
-
-            if (!(PathFinder.FindPath(new Vector2(x, y), Player.PathingNodePosition) == null))
-            {
-                Sprite newPowerup = new Sprite(
-                    new Vector2(thisDestination.X, thisDestination.Y),
-                    Texture,
-                    new Rectangle(64, 128, 32, 32),
-                    Vector2.Zero);
-
-                newPowerup.Animate = false;            
-                newPowerup.CollisionRadius = 14;        
-                newPowerup.AddFrame(new Rectangle(96, 128, 32, 32));   
-
-                if (type == WeaponType.Rocket)
-                {
-                    newPowerup.Frame = 1;
-                }
-                PowerUps.Add(newPowerup);             
-                timeSinceLastPowerup = 0.0f;         
-            }
-        }
 
 
-        private static void checkPowerupSpawns(float elapsed)
-        {
-            timeSinceLastPowerup += elapsed;
-
-            if (timeSinceLastPowerup >= timeBetweenPowerups)
-            {
-                WeaponType type = WeaponType.Triple;
-
-                if (rand.Next(0, 2) == 1)
-                {
-                    type = WeaponType.Rocket;       
-                }
-
-                //!prevent powerup spawns
-                //tryToSpawnPowerup(
-                //rand.Next(0, TileMap.MapWidth),
-                //rand.Next(0, TileMap.MapHeight),
-                //type);
-            }
-        }
-
-        #endregion
-
-
-
-        #region Part 3 - Collision Detection
         private static void checkShotWallImpacts(Sprite shot)
         {
             if (shot.Expired)
@@ -233,26 +156,32 @@ namespace Lavimodiere_Beazer_Midterm_Project
                     checkRocketSplashDamage(shot.WorldCenter);
                 }
             }
-        }
 
-        private static void checkPowerupPickups()
-        {
-            for (int x = PowerUps.Count - 1; x >= 0; x--)
+            if (bouncesLeft > 0)
             {
-                if (Player.BaseSprite.IsCircleColliding(
-                PowerUps[x].WorldCenter,
-                PowerUps[x].CollisionRadius))
+                //Ricochet shots
+                if (shot.Velocity.Y < 0 && shot.Velocity.X > 0)
                 {
-                    switch (PowerUps[x].Frame)
-                    {
-                        case 0: CurrentWeaponType = WeaponType.Triple;
-                            break;
-                        case 1: CurrentWeaponType = WeaponType.Rocket;
-                            break;
-                    }
-                    WeaponTimeRemaining = weaponTimeDefault;
-                    PowerUps.RemoveAt(x);
+                    shot.Velocity *= new Vector2(-1, -1);
                 }
+                if (shot.Velocity.Y < 0 && shot.Velocity.X < 0)
+                {
+                    shot.Velocity *= new Vector2(-1, 1);
+                }
+                if (shot.Velocity.Y > 0 && shot.Velocity.X > 0)
+                {
+                    shot.Velocity *= new Vector2(1, -1);
+                }
+                if (shot.Velocity.Y > 0 && shot.Velocity.X < 0)
+                {
+                    shot.Velocity *= new Vector2(-1, 1);
+                }
+
+                else
+                {
+                    shot.Velocity *= new Vector2(-1, -1);
+                }
+                bouncesLeft--;
             }
         }
 
@@ -317,11 +246,7 @@ namespace Lavimodiere_Beazer_Midterm_Project
                 }
             }
         }
-        #endregion
 
-
-        #region Part 1 - Update and Draw
-        
         static public void Update(GameTime gameTime)
         {
 
@@ -343,10 +268,6 @@ namespace Lavimodiere_Beazer_Midterm_Project
                     Shots.RemoveAt(x);
                 }
             }
-
-            //!remove pickups
-            //checkPowerupSpawns(elapsed);
-            //checkPowerupPickups();
         }
 
 
@@ -356,17 +277,7 @@ namespace Lavimodiere_Beazer_Midterm_Project
             {
                 sprite.Draw(spriteBatch);
             }
-
-            foreach (Sprite sprite in PowerUps)
-            {
-                sprite.Draw(spriteBatch);
-            }
         }
-
-        #endregion
-
-
-
 
     }
 }

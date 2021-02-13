@@ -20,12 +20,7 @@ namespace Lavimodiere_Beazer_Midterm_Project
         {
             Stationary, Moving
         };
-        public enum WeaponType
-        {
-            Basic,//bounces once
-            Fast,//doesnt bounce
-            Bouncy//,//bounces twice
-        };
+        public static WeaponManager weaponManager = new WeaponManager();
 
 
         //Constructor(s)
@@ -71,7 +66,6 @@ namespace Lavimodiere_Beazer_Midterm_Project
             }
         }
 
-        #region AI
         private Vector2 determineMoveDirection()
         {
             if (reachedTargetSquare())
@@ -106,6 +100,5 @@ namespace Lavimodiere_Beazer_Midterm_Project
                 return TileMap.GetSquareAtPixel(Player.BaseSprite.WorldCenter);
             }
         }
-        #endregion
     }
 }

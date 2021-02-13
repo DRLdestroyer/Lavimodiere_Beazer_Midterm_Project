@@ -20,10 +20,6 @@ namespace Lavimodiere_Beazer_Midterm_Project
         private static float playerSpeed = 90f;              
         private static Rectangle scrollArea = new Rectangle(150, 100, 500, 400);
 
-
-
-
-        #region Part 6- Properties
         public static Vector2 PathingNodePosition
         {
             get
@@ -31,13 +27,8 @@ namespace Lavimodiere_Beazer_Midterm_Project
                     return TileMap.GetSquareAtPixel(BaseSprite.WorldCenter);
                 }
         }
-        
-        #endregion
-
-
 
         #region Initialization
-
         public static void Initialize(Texture2D texture, Rectangle baseInitialFrame,
             int baseFrameCount, Rectangle turretInitialFrame, int turretFrameCount, 
             Vector2 worldLocation)
@@ -71,12 +62,7 @@ namespace Lavimodiere_Beazer_Midterm_Project
         
         #endregion
 
-
-
-
         #region Input Handling
-
-
         private static Vector2 handleKeyboardMovement(KeyboardState keyState)
         {
             Vector2 keyMovement = Vector2.Zero;
@@ -105,23 +91,23 @@ namespace Lavimodiere_Beazer_Midterm_Project
         {
             Vector2 keyShots = Vector2.Zero;
 
-            if (keyState.IsKeyDown(Keys.NumPad1))
-                keyShots = new Vector2(-1, 1);
-            if (keyState.IsKeyDown(Keys.NumPad2))
+            if (keyState.IsKeyDown(Keys.Down)) //down
                 keyShots = new Vector2(0, 1);
-            if (keyState.IsKeyDown(Keys.NumPad3))
-                keyShots = new Vector2(1, 1);
-            if (keyState.IsKeyDown(Keys.NumPad4))
+            if (keyState.IsKeyDown(Keys.Left))  //left
                 keyShots = new Vector2(-1, 0);
-            if (keyState.IsKeyDown(Keys.NumPad6))
+            if (keyState.IsKeyDown(Keys.Right))  //right
                 keyShots = new Vector2(1, 0);
-            if (keyState.IsKeyDown(Keys.NumPad7))
-                keyShots = new Vector2(-1, -1);
-            if (keyState.IsKeyDown(Keys.NumPad8))
+            if (keyState.IsKeyDown(Keys.Up))  //up
                 keyShots = new Vector2(0, -1);
-            if (keyState.IsKeyDown(Keys.NumPad9))
+            if (keyState.IsKeyDown(Keys.Up) && keyState.IsKeyDown(Keys.Right))
                 keyShots = new Vector2(1, -1);
-            
+            if (keyState.IsKeyDown(Keys.Up) && keyState.IsKeyDown(Keys.Left))
+                keyShots = new Vector2(-1, -1);
+            if (keyState.IsKeyDown(Keys.Down) && keyState.IsKeyDown(Keys.Left))
+                keyShots = new Vector2(-1, 1);
+            if (keyState.IsKeyDown(Keys.Down) && keyState.IsKeyDown(Keys.Right))
+                keyShots = new Vector2(1, 1);
+
             return keyShots;      
         }
 
@@ -322,24 +308,18 @@ namespace Lavimodiere_Beazer_Midterm_Project
 
         #endregion
 
-
-
-
-
-
-
-        #region Update and Draw
-        
         public static void Update(GameTime gameTime)
         {
-            
-            handleInput(gameTime);                   
-            
+
+            handleInput(gameTime);
+
             BaseSprite.Update(gameTime);
 
-            clampToWorld();       
+            clampToWorld();
 
             TurretSprite.WorldLocation = BaseSprite.WorldLocation;
+
+            
         }
 
         public static void Draw(SpriteBatch spriteBatch)
@@ -347,7 +327,6 @@ namespace Lavimodiere_Beazer_Midterm_Project
             BaseSprite.Draw(spriteBatch);
             TurretSprite.Draw(spriteBatch);
         }
-        #endregion
 
 
 

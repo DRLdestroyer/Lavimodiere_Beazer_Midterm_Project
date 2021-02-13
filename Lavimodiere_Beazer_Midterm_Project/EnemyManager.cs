@@ -23,7 +23,7 @@ namespace Lavimodiere_Beazer_Midterm_Project
         }
 
 
-        public static void AddEnemy(Vector2 squareLocation, Enemy.MovementType movement, Enemy.WeaponType weapon)
+        public static void AddEnemy(Vector2 squareLocation, Enemy.MovementType movement, int weaponID)
         {
             int startX = (int)squareLocation.X;
             int startY = (int)squareLocation.Y;
@@ -38,12 +38,12 @@ namespace Lavimodiere_Beazer_Midterm_Project
             Enemies.Add(newEnemy);
         }
 
-        public static void AddEnemyForLevel(int level)
+        public static void AddEnemiesForLevel(int level)
         {
-            if(level == 1)
+            //add specific enemy locations here//!
+            if (level == 1)
             {
-                //add specific enemy locations here//!
-                AddEnemy(new Vector2(10, 10), Enemy.MovementType.Stationary, Enemy.WeaponType.Basic);
+                AddEnemy(new Vector2(10, 10), Enemy.MovementType.Stationary, 0);
             }
         }
 
@@ -58,6 +58,16 @@ namespace Lavimodiere_Beazer_Midterm_Project
                     Enemies.RemoveAt(x);            
                 }
             }
+            if(Enemies.Count <= 0)//!if area cleared of enemies
+            {
+                if(GameManager.CurrentWave > 1)//prevent on first wave
+                {
+                    TileMap.tileColor = TileMap.RandomColor();//set random color on level clear
+                    AddEnemiesForLevel(GameManager.CurrentWave);
+                    TileMap.SetTileAtSquare(TileMap.doorTileLoc[1].X, TileMap.doorTileLoc[1].Y, 0);//remove door from list here
+                }
+                GameManager.CurrentWave++;
+            }
         }
     
         
@@ -65,7 +75,7 @@ namespace Lavimodiere_Beazer_Midterm_Project
         {
             foreach (Enemy enemy in Enemies)
             {
-                enemy.Draw(spriteBatch);           
+                enemy.Draw(spriteBatch);
             }
         }
 

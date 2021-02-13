@@ -17,19 +17,20 @@ namespace Lavimodiere_Beazer_Midterm_Project
 
         //floor sprite range (in list)
         public const int FloorTileStart = 0;
-        public const int FloorTileEnd = 2;
+        public const int FloorTileEnd = 1;
 
         //wall sprite range (in list)
-        public const int WallTileStart = FloorTileEnd;
-        public const int WallTileEnd = 3;
+        public const int WallTileStart = FloorTileEnd+1;
+        public const int WallTileEnd = 2;
 
         //wall sprite range (in list)
-        public const int WeakWallTileStart = FloorTileEnd;
+        public const int WeakWallTileStart = FloorTileEnd+1;
         public const int WeakWallTileEnd = 3;
 
         //door sprite range (in list)
-        public const int DoorTileStart = WeakWallTileEnd;
-        public const int DoorTileEnd = 5;
+        public const int DoorTileStart = WeakWallTileEnd+1;
+        public const int DoorTileEnd = 4;
+        static public List<Point> doorTileLoc = new List<Point>();
 
         static private Texture2D texture;
 
@@ -39,48 +40,13 @@ namespace Lavimodiere_Beazer_Midterm_Project
         
         static private Random rand = new Random();
 
-        static public void Initialize(Texture2D tileTexture)
+        static public Color tileColor = RandomColor();//! when all enemies killed, change level color
+
+
+        static public Color RandomColor()
         {
-            texture = tileTexture;
-
-            tiles.Clear();
-            //floor sprite(s)
-            tiles.Add(new Rectangle(0, 0, TileWidth, TileHeight));//0
-            tiles.Add(new Rectangle(32, 0, TileWidth, TileHeight));//1
-            //wall sprite(s)
-            tiles.Add(new Rectangle(64, 0, TileWidth, TileHeight));//2
-            //weak wall sprite(s)
-            tiles.Add(new Rectangle(96, 0, TileWidth, TileHeight));//3
-            //door sprite(s)
-            tiles.Add(new Rectangle(128, 0, TileWidth, TileHeight));//4
-
-            GenerateRandomMap();
-
-        }
-
-        static public void Draw(SpriteBatch spriteBatch)
-        {
-            int startX = GetSquareByPixelX((int)Camera.Position.X);
-            int startY = GetSquareByPixelY((int)Camera.Position.Y);
-
-            int endX = GetSquareByPixelX((int)Camera.Position.X +
-            Camera.ViewPortWidth);
-            int endY = GetSquareByPixelY((int)Camera.Position.Y +
-            Camera.ViewPortHeight);
-
-
-            for (int x = startX; x <= endX; x++)
-                for (int y = startY; y <= endY; y++)
-                {
-                    if ((x >= 0) && (y >= 0) && (x < MapWidth) && (y < MapHeight))
-                    {
-                        spriteBatch.Draw(
-                        texture,
-                        SquareScreenRectangle(x, y),
-                        tiles[GetTileAtSquare(x, y)],
-                        Color.White);
-                    }
-                }
+            Color randColor = new Color(rand.Next(256/2), rand.Next(256/2), rand.Next(256/2));
+            return randColor;
         }
 
         #region Map Squares
@@ -214,7 +180,8 @@ namespace Lavimodiere_Beazer_Midterm_Project
             int wallChancePerSquare = 10;
             int floorTile = rand.Next(FloorTileStart, FloorTileEnd + 1);
             int wallTile = rand.Next(WallTileStart, WallTileEnd + 1);
-            
+            int doorTile = rand.Next(DoorTileStart, DoorTileEnd + 1);
+
             for (int x = 0; x < MapWidth; x++)
             {
                 for (int y = 0; y < MapHeight; y++)
@@ -224,20 +191,84 @@ namespace Lavimodiere_Beazer_Midterm_Project
                     if ((x == 0) || (y == 0) || (x == MapWidth - 1) || (y == MapHeight - 1))
                     {
                         mapSquares[x, y] = wallTile;
-                        continue;        
+                        continue;//move onto the next loop iteration
                     }
 
-                    if ((x == 1) || (y == 1) || (x == MapWidth - 2) || (y == MapHeight - 2))
-                    {
-                        continue;        
-                    }
-
+                    //when not on border and inside wall (0-100)
                     if (rand.Next(0, 100) <= wallChancePerSquare)
                     {
                         mapSquares[x, y] = wallTile;
                     }
+
+                    //set door locations
+                    if ((x == (MapWidth / 2 - MapWidth / 4)) && (y == (MapHeight / 2)))//1st lower door location
+                    {
+                        mapSquares[x, y] = doorTile;
+                        doorTileLoc.Add(new Point(x, y));
+                        continue;
+                    }
+
+                    if ((x == (MapWidth / 2) / (MapWidth / 2)) && (y == (MapHeight / 2) / (MapHeight / 2)))//player spawn location
+                    {
+                        mapSquares[x, y] = floorTile;
+                        continue;
+                    }
+
+                    //set quadrant borders
+                    if ((x == (MapWidth / 2)) || (y == (MapHeight / 2)))
+                    {
+                        mapSquares[x, y] = wallTile;
+                        continue;
+                    }
+
+                    
                 }
             }
+
+        }
+
+        static public void Initialize(Texture2D tileTexture)
+        {
+            texture = tileTexture;
+
+            tiles.Clear();
+            //floor sprite(s)
+            tiles.Add(new Rectangle(0, 0, TileWidth, TileHeight));//0
+            tiles.Add(new Rectangle(32, 0, TileWidth, TileHeight));//1
+            //wall sprite(s)
+            tiles.Add(new Rectangle(64, 0, TileWidth, TileHeight));//2
+            //weak wall sprite(s)
+            tiles.Add(new Rectangle(96, 0, TileWidth, TileHeight));//3
+            //door sprite(s)
+            tiles.Add(new Rectangle(128, 0, TileWidth, TileHeight));//4
+
+            GenerateRandomMap();
+
+        }
+
+        static public void Draw(SpriteBatch spriteBatch)
+        {
+            int startX = GetSquareByPixelX((int)Camera.Position.X);
+            int startY = GetSquareByPixelY((int)Camera.Position.Y);
+
+            int endX = GetSquareByPixelX((int)Camera.Position.X +
+            Camera.ViewPortWidth);
+            int endY = GetSquareByPixelY((int)Camera.Position.Y +
+            Camera.ViewPortHeight);
+
+
+            for (int x = startX; x <= endX; x++)
+                for (int y = startY; y <= endY; y++)
+                {
+                    if ((x >= 0) && (y >= 0) && (x < MapWidth) && (y < MapHeight))
+                    {
+                        spriteBatch.Draw(
+                        texture,
+                        SquareScreenRectangle(x, y),
+                        tiles[GetTileAtSquare(x, y)],
+                        tileColor);
+                    }
+                }
         }
 
     }
