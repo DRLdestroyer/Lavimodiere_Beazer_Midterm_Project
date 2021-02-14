@@ -1,6 +1,9 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Microsoft.Xna.Framework.Audio;
+using System.Collections.Generic;
+using System;
 
 namespace Lavimodiere_Beazer_Midterm_Project
 {
@@ -9,19 +12,21 @@ namespace Lavimodiere_Beazer_Midterm_Project
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
+        public static Dictionary<string, SoundEffectInstance> soundEffectBank = new Dictionary<string, SoundEffectInstance>();
+
         Texture2D spriteSheet;          
         Texture2D titleScreen;            
         SpriteFont defaultFont;            
 
 
-        enum GameStates { TitleScreen, Playing, WaveComplete, GameOver };
-        GameStates gameState = GameStates.TitleScreen;     
+        public enum GameStates { TitleScreen, Playing, WaveComplete, GameOver };
+        static public GameStates gameState = GameStates.TitleScreen;     
         float gameOverTimer = 0.0f;       
         float gameOverDelay = 6.0f;       
         float waveCompleteTimer = 0.0f;     
-        float waveCompleteDelay = 6.0f;    
+        float waveCompleteDelay = 6.0f;
 
-
+        static public Random rand = new Random();
 
         public Game1()
         {
@@ -48,6 +53,13 @@ namespace Lavimodiere_Beazer_Midterm_Project
             titleScreen = Content.Load<Texture2D>(@"Textures\TitleScreen");
             defaultFont = Content.Load<SpriteFont>(@"Fonts\defaultFont");
 
+            //add instances of sounds to SoundInstance list (older at top of list)
+            soundEffectBank.Add("bang", Content.Load<SoundEffect>(@"Audio\bang").CreateInstance());
+            soundEffectBank.Add("boom", Content.Load<SoundEffect>(@"Audio\boom").CreateInstance());
+            soundEffectBank.Add("death", Content.Load<SoundEffect>(@"Audio\death").CreateInstance());
+
+            //to play sounds, utilize:
+            //Game1.soundEffectBank["SoundID"].Play();
 
             TileMap.Initialize(spriteSheet);
             Player.Initialize(spriteSheet, new Rectangle(0, 64, 32, 32), 6,
@@ -77,7 +89,8 @@ namespace Lavimodiere_Beazer_Midterm_Project
                     Player.BaseSprite.WorldCenter,
                     Player.BaseSprite.CollisionRadius))
                 {
-                    gameState = GameStates.GameOver;     
+                    gameState = GameStates.GameOver;
+                    
                 }
             }
         }
@@ -122,7 +135,7 @@ namespace Lavimodiere_Beazer_Midterm_Project
                     break;
 
                 case GameStates.GameOver:
-
+                    
                     gameOverTimer += (float)gameTime.ElapsedGameTime.TotalSeconds;
 
                     if (gameOverTimer > gameOverDelay)
@@ -133,7 +146,7 @@ namespace Lavimodiere_Beazer_Midterm_Project
                     break;
             }
 
-            Window.Title = "Player Square:" + (Player.BaseSprite.WorldLocation/32).ToPoint().ToString();//!player location
+            Window.Title = "Player Square:" + ConvertToGrid(Player.BaseSprite.WorldLocation).ToString();//!player location
 
             base.Update(gameTime);
         }
@@ -154,10 +167,10 @@ namespace Lavimodiere_Beazer_Midterm_Project
                 (gameState == GameStates.GameOver))
             {
                 TileMap.Draw(spriteBatch);            
-                WeaponManager.Draw(spriteBatch);     
+                WeaponManager.Draw(spriteBatch, RandomColor());     
                 Player.Draw(spriteBatch);             
                 EnemyManager.Draw(spriteBatch);      
-                EffectsManager.Draw(spriteBatch);      
+                EffectsManager.Draw(spriteBatch, RandomColor());      
 
                 checkPlayerDeath();                    
 
@@ -183,7 +196,35 @@ namespace Lavimodiere_Beazer_Midterm_Project
             base.Draw(gameTime);
         }
 
-
-
+        //ultility
+        public static Point ConvertToGrid(Point location)
+        {
+            return new Point(location.X / TileMap.TileHeight, location.Y / TileMap.TileWidth);
+        }
+        public static Point ConvertToGrid(Vector2 location)
+        {
+            return new Point((int)location.X / TileMap.TileHeight, (int)location.Y / TileMap.TileWidth);
+        }
+        public static Vector2 UnconvertFromGrid(Point location)
+        {
+            return new Vector2(location.X * TileMap.TileHeight, location.Y * TileMap.TileWidth);
+        }
+        public static Point UnconvertFromGrid(Vector2 location)
+        {
+            return new Point((int)location.X * TileMap.TileHeight, (int)location.Y * TileMap.TileWidth);
+        }
+        static public Color RandomColor()
+        {
+            Color randColor = new Color(rand.Next(256 / 2), rand.Next(256 / 2), rand.Next(256 / 2));
+            if(randColor == Color.Blue)
+            {
+                RandomColor();
+            }
+            if (randColor == Color.Red)
+            {
+                RandomColor();
+            }
+            return randColor;
+        }
     }
 }

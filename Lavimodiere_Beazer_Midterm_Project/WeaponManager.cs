@@ -23,12 +23,20 @@ namespace Lavimodiere_Beazer_Midterm_Project
         static public Rectangle shotRectangle = new Rectangle(0, 128, 32, 32);
         static public float WeaponSpeed = 600f;
         static private float shotTimer = 0f;
-        static public int bouncesLeft = 0;//!
+        static public int bouncesForWeapon = 1;//!
+        static public int bouncesLeft = 1;//!
 
 
         static public WeaponType CurrentWeaponType = WeaponType.Normal;
         static public float WeaponTimeRemaining = 30.0f;
         static private float weaponTimeDefault = 30.0f;
+
+        //B O M B S
+        static public List<Sprite> bombList = new List<Sprite>();
+        static private float bombTimer = 0f;
+        static private float bombMinTimer = 3.0f;
+        static public float detonateTimer = 0.0f;
+        static private float detonateMinTimer = 1.0f;
 
 
         private static void AddShot(Vector2 location, Vector2 velocity, int projectileTextureID)
@@ -55,9 +63,26 @@ namespace Lavimodiere_Beazer_Midterm_Project
 
             Shots.Add(shot);
         }
+        private static void AddBomb(Vector2 location)
+        {
+            Sprite newBomb = new Sprite(
+                   new Vector2(location.X, location.Y),
+                   Texture,
+                   new Rectangle(64, 160, 32, 32),
+                   Vector2.Zero);
+
+            newBomb.Animate = false;         //set animate to false
+            newBomb.CollisionRadius = 14;    //Set a circular collision area
+            newBomb.AddFrame(new Rectangle(128, 128, 32, 32)); //add a frame
+            newBomb.Frame = 1;
+
+            bombList.Add(newBomb);       //Add the powerup sprite to the list
+
+        }
 
         private static void createLargeExplosion(Vector2 location)
         {
+            Game1.soundEffectBank["boom"].Play();
             EffectsManager.AddLargeExplosion(location);
             EffectsManager.AddLargeExplosion(location + new Vector2(-10, -10));
             EffectsManager.AddLargeExplosion(location + new Vector2(-10, 10));
@@ -91,6 +116,20 @@ namespace Lavimodiere_Beazer_Midterm_Project
                 return (shotTimer >= WeaponFireDelay);
             }
         }
+        static public bool CanDropBomb
+        {
+            get
+            {
+                return (bombTimer >= bombMinTimer);
+            }
+        }
+        private static bool CanDetonateBomb
+        {
+            get
+            {
+                return (detonateTimer >= detonateMinTimer);
+            }
+        }
 
         public static void FireWeapon(Vector2 location, Vector2 velocity)//!creates bullets
         {
@@ -114,10 +153,30 @@ namespace Lavimodiere_Beazer_Midterm_Project
                 AddShot(location, velocity, 1);
                 break;
             }
-
-            shotTimer = 0.0f;     
+            Game1.soundEffectBank["bang"].Play();
+            bouncesLeft += bouncesForWeapon;
+            shotTimer = 0.0f;
         }
 
+        static public void DropBomb(Vector2 location)
+        {
+            AddBomb(location);
+            bombTimer = 0.0f;
+        }
+
+        private static void DetonateBomb(float elapsed, Sprite bomb)
+        {
+            detonateTimer += elapsed;
+            if (detonateTimer >= detonateMinTimer)
+            {
+                bomb.Expired = true;
+                createLargeExplosion(bomb.WorldCenter);
+                checkExplosionSplashDamage(bomb.WorldCenter);
+                //CheckBreakingWall(bomb.WorldCenter);//!
+                detonateTimer = 0.0f;
+            }
+
+        }
 
 
         private static void checkWeaponUpgradeExpire(float elapsed)
@@ -142,47 +201,42 @@ namespace Lavimodiere_Beazer_Midterm_Project
                 return;
             }
 
-            if (TileMap.IsWallTile(TileMap.GetSquareAtPixel(shot.WorldCenter)))
+            if (TileMap.IsWallTile(TileMap.GetSquareAtPixel(shot.WorldCenter)))//!
             {
-                shot.Expired = true;      
-                if (shot.Frame == 0)           
+                if (bouncesLeft > 0)
                 {
+                    //Ricochet shots
+                    if (shot.Velocity.Y < 0 && shot.Velocity.X > 0)
+                    {
+                        shot.Velocity *= new Vector2(-1, -1);
+                    }
+                    if (shot.Velocity.Y < 0 && shot.Velocity.X < 0)
+                    {
+                        shot.Velocity *= new Vector2(-1, 1);
+                    }
+                    if (shot.Velocity.Y > 0 && shot.Velocity.X > 0)
+                    {
+                        shot.Velocity *= new Vector2(1, -1);
+                    }
+                    if (shot.Velocity.Y > 0 && shot.Velocity.X < 0)
+                    {
+                        shot.Velocity *= new Vector2(-1, 1);
+                    }
+                    else
+                    {
+                        shot.Velocity *= new Vector2(-1, -1);
+                    }
+                    bouncesLeft--;
+                }
+                else if(bouncesLeft <= 0)
+                {
+                    shot.Expired = true;    //Expire the shot
+                    //Add a new Spark effect at the location of the shot
                     EffectsManager.AddSparksEffect(shot.WorldCenter, shot.Velocity);
                 }
-                else
-                {
-                    createLargeExplosion(shot.WorldCenter);     
-                    
-                    checkRocketSplashDamage(shot.WorldCenter);
-                }
             }
 
-            if (bouncesLeft > 0)
-            {
-                //Ricochet shots
-                if (shot.Velocity.Y < 0 && shot.Velocity.X > 0)
-                {
-                    shot.Velocity *= new Vector2(-1, -1);
-                }
-                if (shot.Velocity.Y < 0 && shot.Velocity.X < 0)
-                {
-                    shot.Velocity *= new Vector2(-1, 1);
-                }
-                if (shot.Velocity.Y > 0 && shot.Velocity.X > 0)
-                {
-                    shot.Velocity *= new Vector2(1, -1);
-                }
-                if (shot.Velocity.Y > 0 && shot.Velocity.X < 0)
-                {
-                    shot.Velocity *= new Vector2(-1, 1);
-                }
-
-                else
-                {
-                    shot.Velocity *= new Vector2(-1, -1);
-                }
-                bouncesLeft--;
-            }
+            
         }
 
 
@@ -206,36 +260,25 @@ namespace Lavimodiere_Beazer_Midterm_Project
                         enemy.Destroyed = true;         
 
                         GameManager.Score += 10;        
-                        
-                        if (shot.Frame == 0)
-                        {
-                            EffectsManager.AddExplosion(
-                                enemy.EnemyBase.WorldCenter,
-                                enemy.EnemyBase.Velocity / 30);
-                        }
-                        else
-                        {
-                            if (shot.Frame == 1)
-                            {
-                                createLargeExplosion(shot.WorldCenter);
-                                checkRocketSplashDamage(shot.WorldCenter);
-                            }
-                        }
+
+                        EffectsManager.AddExplosion(
+                            enemy.EnemyBase.WorldCenter,
+                            enemy.EnemyBase.Velocity / 30);
                     }
                 }
             }
         }
 
         
-        private static void checkRocketSplashDamage(Vector2 location)
+        private static void checkExplosionSplashDamage(Vector2 location)
         {
-            int rocketSplashRadius = 40;
+            int explosionSplashRadius = 40;
 
             foreach (Enemy enemy in EnemyManager.Enemies)
             {
                 if (!enemy.Destroyed)
                 {
-                    if (enemy.EnemyBase.IsCircleColliding(location, rocketSplashRadius))
+                    if (enemy.EnemyBase.IsCircleColliding(location, explosionSplashRadius))
                     {
                         enemy.Destroyed = true;
 
@@ -245,6 +288,13 @@ namespace Lavimodiere_Beazer_Midterm_Project
                     }
                 }
             }
+
+            Point a = Game1.ConvertToGrid(new Point((int)location.X, (int)location.Y));
+
+            if (TileMap.mapSquares[a.X, a.Y] == TileMap.WeakWallTileEnd)
+            {
+
+            }
         }
 
         static public void Update(GameTime gameTime)
@@ -252,6 +302,7 @@ namespace Lavimodiere_Beazer_Midterm_Project
 
             float elapsed = (float)gameTime.ElapsedGameTime.TotalSeconds;
             shotTimer += elapsed;
+            bombTimer += elapsed;
 
             checkWeaponUpgradeExpire(elapsed);
 
@@ -268,14 +319,29 @@ namespace Lavimodiere_Beazer_Midterm_Project
                     Shots.RemoveAt(x);
                 }
             }
+            for (int x = bombList.Count - 1; x >= 0; x--)
+            {
+                bombList[x].Update(gameTime);
+                DetonateBomb(elapsed, bombList[x]);
+
+                if (bombList[x].Expired)
+                {
+                    bombList.RemoveAt(x);
+                }
+
+            }
         }
 
 
-        static public void Draw(SpriteBatch spriteBatch)
+        static public void Draw(SpriteBatch spriteBatch, Color colorTint)
         {
             foreach (Particle sprite in Shots)
             {
-                sprite.Draw(spriteBatch);
+                sprite.Draw(spriteBatch, colorTint);
+            }
+            foreach (Sprite sprite in bombList)
+            {
+                sprite.Draw(spriteBatch, Color.Yellow);
             }
         }
 

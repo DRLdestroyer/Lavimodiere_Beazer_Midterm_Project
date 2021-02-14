@@ -14,8 +14,6 @@ namespace Lavimodiere_Beazer_Midterm_Project
 
         public static void StartNewWave()
         {
-            CurrentWave++;
-
             Player.BaseSprite.WorldLocation = PlayerStartLoc;
             Camera.Position = Vector2.Zero;
             WeaponManager.CurrentWeaponType = WeaponManager.WeaponType.Normal;
@@ -26,6 +24,7 @@ namespace Lavimodiere_Beazer_Midterm_Project
 
             TileMap.GenerateRandomMap();
             EnemyManager.AddEnemiesForLevel(CurrentWave);
+            CurrentWave++;
         }
 
 
@@ -34,7 +33,6 @@ namespace Lavimodiere_Beazer_Midterm_Project
             CurrentWave = 0;
             Score = 0;
             StartNewWave();
-            //EnemyManager.AddEnemiesForLevel(1);
         }
 
     }

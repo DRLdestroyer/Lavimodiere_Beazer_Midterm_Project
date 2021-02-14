@@ -9,7 +9,7 @@ namespace Lavimodiere_Beazer_Midterm_Project
 {
     class Particle : Sprite
     {
-        #region Part 1 - Declarations
+        #region Declarations
 
         private Vector2 acceleration;                
         private float maxSpeed;                   
@@ -21,7 +21,7 @@ namespace Lavimodiere_Beazer_Midterm_Project
         #endregion
 
 
-        #region Part 1 - Properties
+        #region Properties
 
         public int ElapsedDuration
         {
@@ -52,7 +52,7 @@ namespace Lavimodiere_Beazer_Midterm_Project
 
 
 
-        #region Part 1 - Constructor
+        #region Constructor
 
         public Particle(
         Vector2 location,                
@@ -77,7 +77,7 @@ namespace Lavimodiere_Beazer_Midterm_Project
         #endregion
 
 
-        #region Part 1 - Update and Draw
+        #region Update and Draw
 
         public override void Update(GameTime gameTime)
         {
@@ -107,11 +107,11 @@ namespace Lavimodiere_Beazer_Midterm_Project
             base.Update(gameTime);
         }
 
-        public override void Draw(SpriteBatch spriteBatch)
+        public override void Draw(SpriteBatch spriteBatch, Color colorTint)
         {
             if (IsActive)
             {
-                base.Draw(spriteBatch);
+                base.Draw(spriteBatch, colorTint);
             }
         }
 

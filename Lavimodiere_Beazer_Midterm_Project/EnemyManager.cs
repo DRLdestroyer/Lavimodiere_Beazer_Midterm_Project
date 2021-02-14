@@ -14,6 +14,7 @@ namespace Lavimodiere_Beazer_Midterm_Project
         public static Texture2D enemyTexture;
         public static Rectangle enemyInitialFrame;
         public static int MaxActiveEnemies = 30;
+        private static bool enemiesAlive = true;
 
 
         public static void Initialize(Texture2D texture, Rectangle initialFrame)
@@ -40,10 +41,34 @@ namespace Lavimodiere_Beazer_Midterm_Project
 
         public static void AddEnemiesForLevel(int level)
         {
-            //add specific enemy locations here//!
-            if (level == 1)
+            switch (level)//add specific enemy locations here//!
             {
-                AddEnemy(new Vector2(10, 10), Enemy.MovementType.Stationary, 0);
+                case 1:
+                    AddEnemy(new Vector2(10, 10), Enemy.MovementType.Stationary, 0);
+                    AddEnemy(new Vector2(15, 10), Enemy.MovementType.Stationary, 0);
+                    AddEnemy(new Vector2(10, 5), Enemy.MovementType.Stationary, 0);
+                    enemiesAlive = true;
+                    break;
+                case 2:
+                    AddEnemy(new Vector2(20, 35 ), Enemy.MovementType.Stationary, 0);
+                    AddEnemy(new Vector2(15, 40 ), Enemy.MovementType.Stationary, 0);
+                    AddEnemy(new Vector2(15, 45 ), Enemy.MovementType.Stationary, 0);
+                    AddEnemy(new Vector2(15, 35 ), Enemy.MovementType.Stationary, 0);
+                    AddEnemy(new Vector2(10, 45 ), Enemy.MovementType.Stationary, 0);
+                    enemiesAlive = true;
+                    break;
+
+                case 3:
+                    AddEnemy(new Vector2(30, 10 ), Enemy.MovementType.Stationary, 0);
+                    AddEnemy(new Vector2(35, 20 ), Enemy.MovementType.Stationary, 0);
+                    AddEnemy(new Vector2(45, 10 ), Enemy.MovementType.Stationary, 0);
+                    AddEnemy(new Vector2(45, 20 ), Enemy.MovementType.Stationary, 0);
+                    AddEnemy(new Vector2(45, 15 ), Enemy.MovementType.Stationary, 0);
+                    enemiesAlive = true;
+                    break;
+                default:
+                    enemiesAlive = false;
+                    break;
             }
         }
 
@@ -58,16 +83,42 @@ namespace Lavimodiere_Beazer_Midterm_Project
                     Enemies.RemoveAt(x);            
                 }
             }
-            if(Enemies.Count <= 0)//!if area cleared of enemies
+
+            
+
+            if (Enemies.Count <= 0)//!if area cleared of enemies
             {
-                if(GameManager.CurrentWave > 1)//prevent on first wave
+                if (GameManager.CurrentWave == 1)
                 {
-                    TileMap.tileColor = TileMap.RandomColor();//set random color on level clear
                     AddEnemiesForLevel(GameManager.CurrentWave);
-                    TileMap.SetTileAtSquare(TileMap.doorTileLoc[1].X, TileMap.doorTileLoc[1].Y, 0);//remove door from list here
+
+                }
+                if (GameManager.CurrentWave > 1)//prevent on first wave
+                {
+                    
+                    AddEnemiesForLevel(GameManager.CurrentWave);
+                    if (GameManager.CurrentWave >= 2)
+                    {
+                        TileMap.SetTileAtSquare(TileMap.doorTileLoc[0].X, TileMap.doorTileLoc[0].Y, 0);//remove door from list here
+                        TileMap.RandomizeTileColors();
+                    }
+                        
+                    if (GameManager.CurrentWave >= 3)
+                    {
+                        TileMap.SetTileAtSquare(TileMap.doorTileLoc[1].X, TileMap.doorTileLoc[1].Y, 0);//remove door from list here
+                        TileMap.RandomizeTileColors();
+                    }
+                        
+                    if (GameManager.CurrentWave >= 4)
+                    {
+                        TileMap.SetTileAtSquare(TileMap.doorTileLoc[2].X, TileMap.doorTileLoc[2].Y, 0);//remove door from list here
+                        TileMap.RandomizeTileColors();
+                        Game1.gameState = Game1.GameStates.WaveComplete;
+                    }
                 }
                 GameManager.CurrentWave++;
             }
+
         }
     
         

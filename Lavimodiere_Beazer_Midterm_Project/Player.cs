@@ -108,6 +108,14 @@ namespace Lavimodiere_Beazer_Midterm_Project
             if (keyState.IsKeyDown(Keys.Down) && keyState.IsKeyDown(Keys.Right))
                 keyShots = new Vector2(1, 1);
 
+            if (keyState.IsKeyDown(Keys.Space))
+            {
+                if (WeaponManager.CanDropBomb)
+                {
+                    WeaponManager.DropBomb(TurretSprite.WorldLocation);
+                }
+            }
+
             return keyShots;      
         }
 
@@ -324,8 +332,8 @@ namespace Lavimodiere_Beazer_Midterm_Project
 
         public static void Draw(SpriteBatch spriteBatch)
         {
-            BaseSprite.Draw(spriteBatch);
-            TurretSprite.Draw(spriteBatch);
+            BaseSprite.Draw(spriteBatch, Color.Blue);
+            TurretSprite.Draw(spriteBatch, Color.Blue);
         }
 
 

@@ -254,7 +254,7 @@ namespace Lavimodiere_Beazer_Midterm_Project
         }
 
 
-        public virtual void Draw(SpriteBatch spriteBatch)
+        public virtual void Draw(SpriteBatch spriteBatch, Color tintColor)
         {
             if (!Expired)
             {

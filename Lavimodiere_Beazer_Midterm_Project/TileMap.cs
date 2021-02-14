@@ -10,6 +10,7 @@ namespace Lavimodiere_Beazer_Midterm_Project
 {
     static class TileMap
     {
+
         public const int TileWidth = 32;//Width of tile
         public const int TileHeight = 32;//Height of tile
         public const int MapWidth = 50;//Width of Map in tiles
@@ -24,8 +25,9 @@ namespace Lavimodiere_Beazer_Midterm_Project
         public const int WallTileEnd = 2;
 
         //wall sprite range (in list)
-        public const int WeakWallTileStart = FloorTileEnd+1;
+        public const int WeakWallTileStart = WallTileEnd+1;
         public const int WeakWallTileEnd = 3;
+        static public List<Sprite> weakWall = new List<Sprite>();
 
         //door sprite range (in list)
         public const int DoorTileStart = WeakWallTileEnd+1;
@@ -35,19 +37,11 @@ namespace Lavimodiere_Beazer_Midterm_Project
         static private Texture2D texture;
 
         static private List<Rectangle> tiles = new List<Rectangle>();
+        static public List<Color> tileColors = new List<Color>();//! when all enemies killed, change level color
 
-        static private int[,] mapSquares = new int[MapWidth, MapHeight];
-        
-        static private Random rand = new Random();
+        static public int[,] mapSquares = new int[MapWidth, MapHeight];
 
-        static public Color tileColor = RandomColor();//! when all enemies killed, change level color
-
-
-        static public Color RandomColor()
-        {
-            Color randColor = new Color(rand.Next(256/2), rand.Next(256/2), rand.Next(256/2));
-            return randColor;
-        }
+        private static Random rand = Game1.rand;
 
         #region Map Squares
         static public int GetSquareByPixelX(int pixelX)
@@ -121,7 +115,7 @@ namespace Lavimodiere_Beazer_Midterm_Project
             }
             else
             {
-                return -1;            
+                return -1;
             }
         }
 
@@ -130,7 +124,7 @@ namespace Lavimodiere_Beazer_Midterm_Project
         {
             if ((tileX >= 0) && (tileX < MapWidth) && (tileY >= 0) && (tileY < MapHeight))
             {
-                mapSquares[tileX, tileY] = tile;           
+                mapSquares[tileX, tileY] = tile;
             }
         }
 
@@ -177,9 +171,10 @@ namespace Lavimodiere_Beazer_Midterm_Project
 
         static public void GenerateRandomMap()
         {
-            int wallChancePerSquare = 10;
+            int wallChancePerSquare = 15;
             int floorTile = rand.Next(FloorTileStart, FloorTileEnd + 1);
             int wallTile = rand.Next(WallTileStart, WallTileEnd + 1);
+            int weakWallTile = rand.Next(WeakWallTileStart, WeakWallTileEnd + 1);
             int doorTile = rand.Next(DoorTileStart, DoorTileEnd + 1);
 
             for (int x = 0; x < MapWidth; x++)
@@ -188,7 +183,7 @@ namespace Lavimodiere_Beazer_Midterm_Project
                 {
                     mapSquares[x, y] = floorTile;
 
-                    if ((x == 0) || (y == 0) || (x == MapWidth - 1) || (y == MapHeight - 1))
+                    if ((x == 0) || (y == 0) || (x == MapWidth - 1) || (y == MapHeight - 1))//world border
                     {
                         mapSquares[x, y] = wallTile;
                         continue;//move onto the next loop iteration
@@ -197,11 +192,29 @@ namespace Lavimodiere_Beazer_Midterm_Project
                     //when not on border and inside wall (0-100)
                     if (rand.Next(0, 100) <= wallChancePerSquare)
                     {
-                        mapSquares[x, y] = wallTile;
+                        if (Game1.rand.Next(1, 3) == 1)
+                        {
+                            mapSquares[x, y] = weakWallTile;
+                        }
+                        else
+                            mapSquares[x, y] = wallTile;
+                        
                     }
 
                     //set door locations
-                    if ((x == (MapWidth / 2 - MapWidth / 4)) && (y == (MapHeight / 2)))//1st lower door location
+                    if ((x == (MapWidth / 2 - MapWidth / 4)) && (y == (MapHeight / 2)))//lower door location
+                    {
+                        mapSquares[x, y] = doorTile;
+                        doorTileLoc.Add(new Point(x, y));
+                        continue;
+                    }
+                    if ((x == (MapWidth / 2)) && (y == (MapHeight / 2 - MapWidth / 4)))//right door location
+                    {
+                        mapSquares[x, y] = doorTile;
+                        doorTileLoc.Add(new Point(x, y));
+                        continue;
+                    }
+                    if ((x == (MapWidth / 2 + MapWidth / 4)) && (y == (MapHeight / 2)))//right lower door location
                     {
                         mapSquares[x, y] = doorTile;
                         doorTileLoc.Add(new Point(x, y));
@@ -213,6 +226,39 @@ namespace Lavimodiere_Beazer_Midterm_Project
                         mapSquares[x, y] = floorTile;
                         continue;
                     }
+
+                    //clear front of doors
+                    if ((x == (MapWidth / 2 - MapWidth / 4)) && (y == (MapHeight / 2)-1))//lower door location
+                    {
+                        mapSquares[x, y] = floorTile;
+                        continue;
+                    }
+                    if ((x == (MapWidth / 2 - MapWidth / 4)) && (y == (MapHeight / 2) + 1))//lower door location
+                    {
+                        mapSquares[x, y] = floorTile;
+                        continue;
+                    }
+                    if ((x == (MapWidth / 2)-1) && (y == (MapHeight / 2 - MapWidth / 4)))//right door location
+                    {
+                        mapSquares[x, y] = floorTile;
+                        continue;
+                    }
+                    if ((x == (MapWidth / 2) + 1) && (y == (MapHeight / 2 - MapWidth / 4)))//right door location
+                    {
+                        mapSquares[x, y] = floorTile;
+                        continue;
+                    }
+                    if ((x == (MapWidth / 2 + MapWidth / 4)-1) && (y == (MapHeight / 2)))//right lower door location
+                    {
+                        mapSquares[x, y] = floorTile;
+                        continue;
+                    }
+                    if ((x == (MapWidth / 2 + MapWidth / 4) + 1) && (y == (MapHeight / 2)))//right lower door location
+                    {
+                        mapSquares[x, y] = floorTile;
+                        continue;
+                    }
+
 
                     //set quadrant borders
                     if ((x == (MapWidth / 2)) || (y == (MapHeight / 2)))
@@ -232,18 +278,45 @@ namespace Lavimodiere_Beazer_Midterm_Project
             texture = tileTexture;
 
             tiles.Clear();
+            tileColors.Clear();
             //floor sprite(s)
             tiles.Add(new Rectangle(0, 0, TileWidth, TileHeight));//0
+            tileColors.Add(Game1.RandomColor());
             tiles.Add(new Rectangle(32, 0, TileWidth, TileHeight));//1
+            tileColors.Add(Game1.RandomColor());
             //wall sprite(s)
             tiles.Add(new Rectangle(64, 0, TileWidth, TileHeight));//2
+            tileColors.Add(Game1.RandomColor());
             //weak wall sprite(s)
             tiles.Add(new Rectangle(96, 0, TileWidth, TileHeight));//3
+            tileColors.Add(Game1.RandomColor());
             //door sprite(s)
             tiles.Add(new Rectangle(128, 0, TileWidth, TileHeight));//4
+            tileColors.Add(Game1.RandomColor());
 
             GenerateRandomMap();
+            //Sprite e = new Sprite(new Vector2(x, y), texture,
+            //    new Rectangle(
+            //        new Point(96, 0),
+            //        new Point(32, 32)
+            //    ), Vector2.Zero);
+            //e.Animate = false;
+            //e.CollisionRadius = 14;
 
+            //weakWall.Add(e);
+        }
+
+        static public void Update(GameTime gameTime)
+        {
+            for(int x = weakWall.Count - 1; x >= 0; x--)
+            {
+                weakWall[x].Update(gameTime);
+                if (weakWall[x].Expired)
+                {
+                    weakWall.RemoveAt(x);
+                }
+            }
+            
         }
 
         static public void Draw(SpriteBatch spriteBatch)
@@ -256,20 +329,37 @@ namespace Lavimodiere_Beazer_Midterm_Project
             int endY = GetSquareByPixelY((int)Camera.Position.Y +
             Camera.ViewPortHeight);
 
+            foreach(Sprite wall in weakWall)
+            {
+                wall.Draw(spriteBatch, Color.White);
+            }
 
             for (int x = startX; x <= endX; x++)
                 for (int y = startY; y <= endY; y++)
                 {
                     if ((x >= 0) && (y >= 0) && (x < MapWidth) && (y < MapHeight))
                     {
+                        int a = mapSquares[x, y];//!
+                        if (a > tileColors.Count)//if over limit(error case)
+                        {
+                            a = 0;
+                        }
+                        
                         spriteBatch.Draw(
                         texture,
                         SquareScreenRectangle(x, y),
                         tiles[GetTileAtSquare(x, y)],
-                        tileColor);
+                        tileColors[a]);
                     }
                 }
         }
 
+        static public void RandomizeTileColors()
+        {
+            for (int i = 0; i < tileColors.Count; i++)
+            {
+                tileColors[i] = Game1.RandomColor();//set random color on level clear
+            }
+        }
     }
 }

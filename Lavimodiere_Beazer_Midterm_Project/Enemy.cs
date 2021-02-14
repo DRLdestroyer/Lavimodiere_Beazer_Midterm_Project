@@ -61,8 +61,8 @@ namespace Lavimodiere_Beazer_Midterm_Project
         {
             if (!Destroyed)
             {
-               EnemyBase.Draw(spriteBatch);
-               EnemyClaws.Draw(spriteBatch);
+               EnemyBase.Draw(spriteBatch, Color.OrangeRed);
+               EnemyClaws.Draw(spriteBatch, Color.OrangeRed);
             }
         }
 
@@ -90,6 +90,13 @@ namespace Lavimodiere_Beazer_Midterm_Project
             List<Vector2> path = PathFinder.FindPath(
             TileMap.GetSquareAtPixel(EnemyBase.WorldCenter),
             TileMap.GetSquareAtPixel(Player.BaseSprite.WorldCenter));
+
+            if(path == null)
+            {
+                Console.WriteLine("Unable to set nodes to destination!");
+                EnemySpeed = 0;
+                return EnemyBase.WorldLocation;
+            }
 
             if (path.Count > 1)
             {

@@ -72,11 +72,11 @@ namespace Lavimodiere_Beazer_Midterm_Project
             }
         }
 
-        static public void Draw(SpriteBatch spriteBatch)
+        static public void Draw(SpriteBatch spriteBatch, Color colorTint)
         {
             foreach (Sprite sprite in Effects)
             {
-                sprite.Draw(spriteBatch);
+                sprite.Draw(spriteBatch, colorTint);
             }
         }
 
@@ -137,6 +137,7 @@ namespace Lavimodiere_Beazer_Midterm_Project
 
         public static void AddExplosion(Vector2 location, Vector2 momentum)
         {
+            Game1.soundEffectBank["boom"].Play();
             AddExplosion(
             location,
             momentum,
@@ -152,6 +153,7 @@ namespace Lavimodiere_Beazer_Midterm_Project
 
         public static void AddLargeExplosion(Vector2 location)
         {
+            Game1.soundEffectBank["boom"].Play();
             AddExplosion(
             location,
             Vector2.Zero,
