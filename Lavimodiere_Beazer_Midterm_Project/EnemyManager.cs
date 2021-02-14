@@ -114,6 +114,7 @@ namespace Lavimodiere_Beazer_Midterm_Project
                         TileMap.SetTileAtSquare(TileMap.doorTileLoc[2].X, TileMap.doorTileLoc[2].Y, 0);//remove door from list here
                         TileMap.RandomizeTileColors();
                         Game1.gameState = Game1.GameStates.WaveComplete;
+                        GameManager.CurrentWave = 0;
                     }
                 }
                 GameManager.CurrentWave++;
